@@ -1,0 +1,18 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "Bamazon is a webstore inventory simulator.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbpkp07/Bamazon.git"
+  },
+  "author": "Jeremy Barnes",
+  "license": "ISC",
+  "homepage": "https://github.com/jbpkp07/Bamazon#readme",
+  "dependencies": {
+    "inquirer": "^7.0.0",
+    "mysql2": "^1.7.0",
+    "terminal-kit": "^1.31.2"
+  }
+}
