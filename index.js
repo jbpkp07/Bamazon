@@ -10,8 +10,6 @@ const bamazonDB = new BamazonDatabase();
 
 printHeader();
 
-
-
 bamazonDB.connect().then(() => {
 
     bamazonDB.queryDatabase('SELECT * FROM ??', ["products"])
@@ -29,6 +27,4 @@ bamazonDB.connect().then(() => {
     });
 
 }).catch(() => { });
-
-
 
