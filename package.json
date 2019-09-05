@@ -11,6 +11,7 @@
   "license": "ISC",
   "homepage": "https://github.com/jbpkp07/Bamazon#readme",
   "dependencies": {
+    "cli-table": "^0.3.1",
     "inquirer": "^7.0.0",
     "mysql2": "^1.7.0",
     "terminal-kit": "^1.31.2"

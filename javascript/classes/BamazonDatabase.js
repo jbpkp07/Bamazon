@@ -113,6 +113,10 @@ class BamazonDatabase {
 
                     this.seedDatabase();
                 }
+                else {
+
+                    this.exit();
+                }
             });
         }
         else {
@@ -162,7 +166,7 @@ class BamazonDatabase {
 
             }).finally(() => {
                
-                process.exit(0); 
+                this.exit(); 
             });
 
         }).catch((error) => {
@@ -183,6 +187,12 @@ class BamazonDatabase {
         terminal.red(`   Unable to connect to database [`).white(`${this.db}`).red(`]\n\n`);
         terminal.red(`   ${error}\n\n`);
 
+        this.exit();
+    }
+
+    exit() {
+
+        terminal.hideCursor("");  //with ("") it shows the cursor
         process.exit(0);
     }
 }
