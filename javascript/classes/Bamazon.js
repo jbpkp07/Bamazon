@@ -13,19 +13,30 @@ class Bamazon {
         this.bamazonDbAPI = new BamazonDatabaseAPI();
 
         this.portalChoice = null;
+
+        this.assignListeners();
+    }
+
+    assignListeners() {
+
+        process.once(this.bamazonDbAPI.connected_Event, () => {
+
+            terminal.saveCursor();
+
+            this.choosePortal();
+        });
+
+        process.once(this.bamazonDbAPI.disconnected_Event, () => {
+
+            this.exit();
+        });
     }
 
     startApp() {
 
         printHeader();
 
-        this.bamazonDbAPI.connect().then(() => {
-
-            terminal.saveCursor();
-
-            this.choosePortal();
-
-        }).catch(this.skipCatch);
+        this.bamazonDbAPI.connect();
     }
 
     choosePortal() {
@@ -76,7 +87,7 @@ class Bamazon {
                 break;
         }
 
-        this.exit();
+        this.bamazonDbAPI.disconnect();
     }
 
     erasePreviousLines() {
@@ -86,17 +97,11 @@ class Bamazon {
         terminal.eraseDisplayBelow();
     }
 
-    skipCatch() { /* Error handling / console logging done downstream */ }
-
     exit() {
 
-        this.bamazonDbAPI.disconnect().then(() => {
-            
-            terminal.hideCursor("");  //with ("") it shows the cursor
-            
-            process.exit(0);
+        terminal.hideCursor("");  //with ("") it shows the cursor
 
-        }).catch(this.skipCatch);
+        process.exit(0);
     }
 }
 

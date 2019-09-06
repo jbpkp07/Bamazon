@@ -15,5 +15,8 @@
     "inquirer": "^7.0.0",
     "mysql2": "^1.7.0",
     "terminal-kit": "^1.31.2"
+  },
+  "scripts": {
+    "start": "Node index.js"
   }
 }

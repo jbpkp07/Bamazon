@@ -8,7 +8,7 @@ class Utility {
 
         if (!this.isFunc(evalFunc) || !this.isNum(pollMs)) {
 
-            throw new Error("getPollingPromise(evalFunc, pollMs [, resolveValue]) was not supplied with valid arguments");
+            throw new Error("Utility.getPollingPromise(evalFunc, pollMs [, resolveValue]) was not supplied with valid arguments");
         }
 
         const originalValue = evalFunc();
@@ -41,7 +41,7 @@ class Utility {
         }
         else {
 
-            throw new Error("getPollingPromise(evalFunc, pollMs [, resolveValue]) mismatched types between evalFunc and resolveValue");
+            throw new Error("Utility.getPollingPromise(evalFunc, pollMs [, resolveValue]) mismatched types between evalFunc and resolveValue");
         }
 
         return new Promise((resolve) => {
@@ -54,21 +54,21 @@ class Utility {
         });
     }
 
-    static setEvtEmitterRepeating(evalFunc, pollMs, eventName, emitOnValue) {
+    static setPollingEvtEmitterRepeating(evalFunc, pollMs, eventName, emitOnValue) {
 
-        return this.setEvtEmitter(evalFunc, pollMs, eventName, true, emitOnValue);
+        return this.setPollingEvtEmitter(evalFunc, pollMs, eventName, true, emitOnValue);
     }
 
-    static setEvtEmitterNonRepeating(evalFunc, pollMs, eventName, emitOnValue) {
+    static setPollingEvtEmitterNonRepeating(evalFunc, pollMs, eventName, emitOnValue) {
 
-        return this.setEvtEmitter(evalFunc, pollMs, eventName, false, emitOnValue);
+        return this.setPollingEvtEmitter(evalFunc, pollMs, eventName, false, emitOnValue);
     }
 
-    static setEvtEmitter(evalFunc, pollMs, eventName, isRepeating, emitOnValue) {
+    static setPollingEvtEmitter(evalFunc, pollMs, eventName, isRepeating, emitOnValue) {
 
         if (!this.isFunc(evalFunc) || !this.isNum(pollMs) || !this.isStr(eventName) || !this.isBool(isRepeating) || eventName.length === 0) {
 
-            throw new Error("setEvtEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) was not supplied with valid arguments");
+            throw new Error("Utility.setPollingEvtEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) was not supplied with valid arguments");
         }
 
         let oldValue = evalFunc();
@@ -119,7 +119,7 @@ class Utility {
         }
         else {
 
-            throw new Error("setEvtEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) mismatched types between evalFunc and emitOnValue");
+            throw new Error("Utility.setPollingEvtEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) mismatched types between evalFunc and emitOnValue");
         }
 
         const intervalId = setInterval(() => {

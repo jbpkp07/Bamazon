@@ -1,21 +1,24 @@
 "use strict";
-/* global require, module, process, __dirname */
+/* global require, module, process */
 
 const terminal = require("terminal-kit").terminal;
 const mysql2 = require('mysql2/promise');
 const inquirer = require('inquirer');
 const fs = require('fs');
-const path = require('path');
 
-const ConnectionDetails = require('./ConnectionDetails.js');
+const ConnectionDetails = require('./MySQLConnectionDetails.js');
 
 
-class BamazonDatabase {
+class MySQLDatabase {
 
-    constructor() {
+    constructor(host, port, multipleStatments, database, sqlDatabaseSeedFullPath) {
 
-        this.db = 'bamazon';
-        this.connectionDetails = new ConnectionDetails(this.db);
+        this.host = host;
+        this.port = port;
+        this.multipleStatments = multipleStatments;
+        this.database = database;
+        this.sqlDatabaseSeedFullPath = sqlDatabaseSeedFullPath;
+        this.connectionDetails = new ConnectionDetails(this.host, this.port, this.multipleStatments, this.database);
 
         this.isConnected = false;
         this.connectionID = null;
@@ -29,14 +32,14 @@ class BamazonDatabase {
 
         if (this.connectLock) {
 
-            const comment = `   Locked:  Already connecting to database [${this.db}]\n\n`;
+            const comment = `   Locked:  Already connecting to database [${this.database}]\n\n`;
             terminal.red(comment);
             return Promise.reject(comment);
         }
 
         if (this.isConnected) {
 
-            const comment = `   Already connected to database [${this.db}] using connection id [${this.connectionID}]\n\n`;
+            const comment = `   Already connected to database [${this.database}] using connection id [${this.connectionID}]\n\n`;
             terminal.red(comment);
             return Promise.reject(comment);
         }
@@ -66,14 +69,14 @@ class BamazonDatabase {
 
         if (this.disconnectLock) {
 
-            const comment = `   Locked:  Already disconnecting from database [${this.db}]\n\n`;
+            const comment = `   Locked:  Already disconnecting from database [${this.database}]\n\n`;
             terminal.red(comment);
             return Promise.reject(comment);
         }
 
         if (!this.isConnected) {
 
-            const comment = `   No existing connection to database [${this.db}] to disconnect\n\n`;
+            const comment = `   No existing connection to database [${this.database}] to disconnect\n\n`;
             terminal.red(comment);
             return Promise.reject(comment);
         }
@@ -95,13 +98,20 @@ class BamazonDatabase {
         return promise;
     }
 
+    queryDatabase(query, placeholderArray) {
+
+        const promise = this.connection.query(query, placeholderArray);
+
+        return promise;
+    }
+
     seedDatabaseOrExit(error) {
 
-        const isBamazonDBMissing = (error.errno === 1049 && error.sqlState === '42000');
+        const isDatabaseMissing = (error.errno === 1049 && error.sqlState === '42000');
 
-        if (isBamazonDBMissing) {
+        if (isDatabaseMissing) {
 
-            terminal.red(`   Missing [`).white(`${this.db}`).red(`] database...\n\n`);
+            terminal.red(`   Missing [`).white(`${this.database}`).red(`] database...\n\n`);
 
             const promise = this.promptToSeedDatabase();
 
@@ -132,7 +142,7 @@ class BamazonDatabase {
             name: "seedDB",
             type: "confirm",
             default: false,
-            message: ` Would you like to seed the [${this.db}] database`
+            message: ` Would you like to seed the [${this.database}] database`
         };
 
         const promise = inquirer.prompt([prompt]);
@@ -142,23 +152,21 @@ class BamazonDatabase {
 
     seedDatabase() {
 
-        this.connectionDetails = new ConnectionDetails();  //no database assigned, just connect to MySQL without specifying a database
+        this.connectionDetails = new ConnectionDetails(this.host, this.port, this.multipleStatments);  //no database assigned, just connect to MySQL without specifying a database
 
         this.connectLock = false;
 
         this.connect().then(() => {
 
-            const bamazonSeedSQLPath = path.join(__dirname, '../../sql/BamazonSeed.sql');
+            const sqlSeed = fs.readFileSync(this.sqlDatabaseSeedFullPath).toString();
 
-            const sqlSeed = fs.readFileSync(bamazonSeedSQLPath).toString();
-
-            terminal.gray(`   Seeding [`).white(`${this.db}`).gray(`] database...\n\n\n`);
+            terminal.gray(`   Seeding [`).white(`${this.database}`).gray(`] database...\n\n\n`);
 
             terminal.brightCyan(sqlSeed + "\n\n\n");
 
             this.queryDatabase(sqlSeed, []).then(() => {
                 
-                terminal.gray(`   Seeding [`).white(`${this.db}`).gray(`] database finished. Please restart this application.\n\n`);
+                terminal.gray(`   Seeding [`).white(`${this.database}`).gray(`] database finished. Please restart this application.\n\n`);
 
             }).catch((error) => {
                 
@@ -175,16 +183,9 @@ class BamazonDatabase {
         });
     }
 
-    queryDatabase(query, placeholderArray) {
-
-        const promise = this.connection.query(query, placeholderArray);
-
-        return promise;
-    }
-
     exitAfterFailedConnection(error) {
 
-        terminal.red(`   Unable to connect to database [`).white(`${this.db}`).red(`]\n\n`);
+        terminal.red(`   Unable to connect to database [`).white(`${this.database}`).red(`]\n\n`);
         terminal.red(`   ${error}\n\n`);
 
         this.exit();
@@ -198,4 +199,4 @@ class BamazonDatabase {
 }
 
 
-module.exports = BamazonDatabase;
+module.exports = MySQLDatabase;
