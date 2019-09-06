@@ -68,7 +68,7 @@ class Utility {
 
         if (!this.isFunc(evalFunc) || !this.isNum(pollMs) || !this.isStr(eventName) || !this.isBool(isRepeating) || eventName.length === 0) {
 
-            throw new Error("setPollingEventEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) was not supplied with valid arguments");
+            throw new Error("setEvtEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) was not supplied with valid arguments");
         }
 
         let oldValue = evalFunc();
@@ -119,7 +119,7 @@ class Utility {
         }
         else {
 
-            throw new Error("setPollingEventEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) mismatched types between evalFunc and emitOnValue");
+            throw new Error("setEvtEmitter(evalFunc, pollMs, eventName, isRepeating [, emitOnValue]) mismatched types between evalFunc and emitOnValue");
         }
 
         const intervalId = setInterval(() => {
