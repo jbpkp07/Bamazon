@@ -86,7 +86,7 @@ class Bamazon {
         terminal.eraseDisplayBelow();
     }
 
-    skipCatch() {  }   //Error handling / console logging done downstream 
+    skipCatch() { /* Error handling / console logging done downstream */ }
 
     exit() {
 

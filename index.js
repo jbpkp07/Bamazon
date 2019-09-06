@@ -9,13 +9,6 @@ bamazon.startApp();
 
 
 
-
-
-
-
-
-
-
 // bamazonDB.connect().then(() => {
 
 //     bamazonDB.queryDatabase('SELECT * FROM ??', ["products"])

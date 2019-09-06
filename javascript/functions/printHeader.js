@@ -27,12 +27,12 @@ function printHeader() {
     terminal("\n\n\n");
 
 
-
+    
 
     // instantiate
     var table = new Table({
         head: ['TH 1 label', 'TH 2 label'],
-        colWidths: [50, 50],
+        colWidths: [38, 38],
         colAligns: ['middle', 'middle'],
         style: { head: ['cyan'], border: ['gray'], compact: true }
     });
