@@ -4,6 +4,7 @@
 const terminal = require("terminal-kit").terminal;
 const Table = require('cli-table');
 
+
 function printHeader() {
 
     terminal.reset();
@@ -24,33 +25,8 @@ function printHeader() {
     terminal.brightBlue(" │").white("               Supervisor ->  ").gray("view sales by department, add new department").brightBlue("   │\n");
     terminal.brightBlue(" │                                                                             │\n");
     terminal.brightBlue(" └─────────────────────────────────────────────────────────────────────────────┘");
-    terminal("\n\n\n");
-
-
-    
-
-    // instantiate
-    var table = new Table({
-        head: ['TH 1 label', 'TH 2 label'],
-        colWidths: [38, 38],
-        colAligns: ['middle', 'middle'],
-        style: { head: ['cyan'], border: ['gray'], compact: true }
-    });
-
-
-    // table is an Array, so you can `push`, `unshift`, `splice` and friends
-    table.push(
-        ['First value', 'Second value'],
-        ['First value', 'Second value']
-    );
-
-
-
-    const results = table.toString();
-  
-    const resultsIndented = " " + results.replace(/\n/g, "\n ") + "\n\n";
-
-    terminal.brightCyan(resultsIndented);
+    terminal("\n\n");
 }
+
 
 module.exports = printHeader;

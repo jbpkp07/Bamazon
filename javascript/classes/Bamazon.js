@@ -4,6 +4,7 @@
 const terminal = require("terminal-kit").terminal;
 const printHeader = require('../functions/printHeader.js');
 const BamazonDatabaseAPI = require('./BamazonDatabaseAPI.js');
+const BamazonCustomerPortal = require('./BamazonCustomerPortal.js');
 
 
 class Bamazon {
@@ -13,6 +14,8 @@ class Bamazon {
         this.bamazonDbAPI = new BamazonDatabaseAPI();
 
         this.portalChoice = null;
+
+        this.bamazonCustomerPortal = null;
 
         this.assignListeners();
     }
@@ -27,6 +30,11 @@ class Bamazon {
         });
 
         process.once(this.bamazonDbAPI.disconnected_Event, () => {
+
+            this.exit();
+        });
+
+        process.once(this.bamazonDbAPI.exitOnError_Event, () => {
 
             this.exit();
         });
@@ -77,7 +85,8 @@ class Bamazon {
         switch (this.portalChoice) {
 
             case 'customer':
-
+                this.bamazonCustomerPortal = new BamazonCustomerPortal(this.bamazonDbAPI);
+                this.bamazonCustomerPortal.enterPortal();
                 break;
             case 'manager':
 
@@ -87,7 +96,7 @@ class Bamazon {
                 break;
         }
 
-        this.bamazonDbAPI.disconnect();
+        // this.bamazonDbAPI.disconnect();
     }
 
     erasePreviousLines() {

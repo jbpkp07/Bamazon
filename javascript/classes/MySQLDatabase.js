@@ -170,7 +170,7 @@ class MySQLDatabase {
 
             }).catch((error) => {
                 
-                terminal.red(`   ${error}\n\n`);
+                terminal.red(`   Seeding [`).white(`${this.database}`).red(`] ${error}\n\n`);
 
             }).finally(() => {
                

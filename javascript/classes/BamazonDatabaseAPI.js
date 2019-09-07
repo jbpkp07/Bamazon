@@ -1,6 +1,7 @@
 "use strict";
 /* global require, module, process */
 
+const terminal = require("terminal-kit").terminal;
 const details = require('../../mysql_connection_details.js');
 const MySQLDatabase = require('./MySQLDatabase.js');
 
@@ -13,51 +14,43 @@ class BamazonDatabaseAPI {
 
         this.connected_Event = "bamazonDBConnected";
         this.disconnected_Event = "bamazonDBDisconnected";
+        this.getAllProducts_Event = "bamazonGotAllProducts";
+        this.exitOnError_Event = "bamazonExitOnError";
     }
 
     connect() {
 
-        const promise = this.bamazonDB.connect();
-
-        promise.then(() => {
+        this.bamazonDB.connect().then(() => {
 
             process.emit(this.connected_Event);
 
-        }).catch(() => {});
-
-        return promise;
+        }).catch(() => { /* Error handing done in MySQLDatabase class */ });
     }
 
     disconnect() {
 
-        const promise = this.bamazonDB.disconnect();
-
-        promise.then(() => {
+        this.bamazonDB.disconnect().then(() => {
 
             process.emit(this.disconnected_Event);
 
-        }).catch(() => {});
-
-        return promise;
+        }).catch(() => { /* Error handing done in MySQLDatabase class */ });
     }
 
-    // bamazonDB.connect().then(() => {
+    getAllProducts() {
 
-    //     bamazonDB.queryDatabase('SELECT * FROM ??', ["products"])
-    //     .then(([rows, fields]) => {
+        const promise = this.bamazonDB.queryDatabase('SELECT * FROM ??', ["products"]);
 
-    //         console.log(rows);
+        promise.then(([rows, fields]) => {
 
-    //     }).catch((error) => {
+            process.emit(this.getAllProducts_Event, [rows, fields]);
 
-    //         terminal.red(`   ${error}\n\n`);
+        }).catch((error) => {
 
-    //     }).finally(() => {
+            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getAllProducts()`).red(`] ${error}\n\n`);
 
-    //         bamazonDB.disconnect();
-    //     });
-
-    // }).catch(() => { });
+            process.emit(this.exitOnError_Event);
+        });
+    }
 }
 
 
