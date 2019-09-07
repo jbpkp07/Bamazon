@@ -27,7 +27,7 @@ class MySQLConnectionDetails {
 
         if (!Utility.isStr(host) || !Utility.isNum(port) || !Utility.isBool(multipleStatments) || !Utility.isStr(creds.user) || !Utility.isStr(creds.pass)) {
 
-            throw new Error("MySQLConnectionDetails.validateArguments  was not supplied with valid arguments.");
+            throw new Error("MySQLConnectionDetails.validateArguments()  was not supplied with valid arguments.");
         }
     }
 }

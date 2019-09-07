@@ -3,6 +3,7 @@
 
 const terminal = require("terminal-kit").terminal;
 const printHeader = require('../functions/printHeader.js');
+const InquirerPrompts = require('./InquirerPrompts.js');
 const BamazonDatabaseAPI = require('./BamazonDatabaseAPI.js');
 const BamazonCustomerPortal = require('./BamazonCustomerPortal.js');
 
@@ -12,6 +13,8 @@ class Bamazon {
     constructor() {
 
         this.bamazonDbAPI = new BamazonDatabaseAPI();
+
+        this.inquirerPrompts = new InquirerPrompts();
 
         this.portalChoice = null;
 
@@ -49,33 +52,22 @@ class Bamazon {
 
     choosePortal() {
 
-        terminal.hideCursor();
-        terminal.white("   Choose Portal...\n\n").gray("   ↑↓ + <enter>\n");
-
-        const items = ["Customer".padEnd(13), "Manager".padEnd(13), "Supervisor".padEnd(13)];
-
-        const options =
-        {
-            leftPadding: "   ",
-            style: terminal.cyan,
-            selectedStyle: terminal.brightGreen.bgGray,
-            submittedStyle: terminal.brightGreen
-        };
-
-        const promise = terminal.singleColumnMenu(items, options).promise;
+        const promptMSG = "Choose Portal...";
+        const name = "portal";
+        const portals = ["Customer", "Manager", "Supervisor", "Whatever"];  
+        
+        const promise = this.inquirerPrompts.listPrompt(promptMSG, name, portals);
 
         promise.then((choice) => {
-
-            terminal.grabInput(false);   //releases prompt code from hanging app
-
-            this.portalChoice = choice.selectedText.trim().toLowerCase();
-
+    
+            this.portalChoice = choice[name].trim();
+            
             setTimeout(() => {
-
-                this.erasePreviousLines();
-
-                this.enterPortal();
-
+        
+                this.clearScreenBelowHeader();
+                this.choosePortal();
+                // this.enterPortal();
+       
             }, 1000);
         });
     }
@@ -84,14 +76,14 @@ class Bamazon {
 
         switch (this.portalChoice) {
 
-            case 'customer':
+            case 'Customer':
                 this.bamazonCustomerPortal = new BamazonCustomerPortal(this.bamazonDbAPI);
                 this.bamazonCustomerPortal.enterPortal();
                 break;
-            case 'manager':
+            case 'Manager':
 
                 break;
-            case 'supervisor':
+            case 'Supervisor':
 
                 break;
         }
@@ -99,7 +91,7 @@ class Bamazon {
         // this.bamazonDbAPI.disconnect();
     }
 
-    erasePreviousLines() {
+    clearScreenBelowHeader() {
 
         terminal.restoreCursor();
 

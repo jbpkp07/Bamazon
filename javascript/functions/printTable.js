@@ -1,5 +1,5 @@
 "use strict";
-/* global require, module, exports */
+/* global require, module */
 
 const terminal = require("terminal-kit").terminal;
 const Table = require('cli-table');
