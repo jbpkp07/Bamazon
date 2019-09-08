@@ -30,4 +30,4 @@
                ("Keurig K-Classic Coffee Maker", @kitchen, 79.99, 277),
             
                ("Adidas Outdoor Terrex Swift R2 GTX", @clothing, 84.15, 27),
-               ("Under Armour Playoff Golf Polo 2.0", @clothing, 55.93, 54);
+               ("Under Armour Playoff Golf Polo 2.0", @clothing, 55.93, 0);

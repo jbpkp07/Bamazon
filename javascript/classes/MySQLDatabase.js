@@ -1,12 +1,12 @@
 "use strict";
 /* global require, module, process */
 
+const ConnectionDetails = require('./MySQLConnectionDetails.js');
 const terminal = require("terminal-kit").terminal;
 const mysql2 = require('mysql2/promise');
 const inquirer = require('inquirer');
 const fs = require('fs');
 
-const ConnectionDetails = require('./MySQLConnectionDetails.js');
 
 
 class MySQLDatabase {

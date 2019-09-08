@@ -54,7 +54,7 @@ class Bamazon {
 
         const promptMSG = "Choose Portal...";
         const name = "portal";
-        const portals = ["Customer", "Manager", "Supervisor", "Whatever"];  
+        const portals = ["Customer", "Manager", "Supervisor"];  
         
         const promise = this.inquirerPrompts.listPrompt(promptMSG, name, portals);
 
@@ -65,9 +65,9 @@ class Bamazon {
             setTimeout(() => {
         
                 this.clearScreenBelowHeader();
-                this.choosePortal();
-                // this.enterPortal();
-       
+ 
+                this.enterPortal();
+
             }, 1000);
         });
     }

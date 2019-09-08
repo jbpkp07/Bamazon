@@ -42,6 +42,11 @@ class BamazonDatabaseAPI {
 
         promise.then(([rows, fields]) => {
 
+            for (const row of rows) {
+
+                row.price = parseFloat(row.price);  //convert from DECIMAL(9,2), which is read as a string, to javascript float
+            }
+            
             process.emit(this.getAllProducts_Event, [rows, fields]);
 
         }).catch((error) => {

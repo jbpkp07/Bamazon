@@ -3,10 +3,7 @@
 
 const terminal = require("terminal-kit").terminal;
 const printTable = require('../functions/printTable.js');
-
-
-// const printHeader = require('../functions/printHeader.js');
-// const BamazonDatabaseAPI = require('./BamazonDatabaseAPI.js');
+const InquirerPrompts = require('./InquirerPrompts.js');
 
 
 class BamazonCustomerPortal {
@@ -14,6 +11,12 @@ class BamazonCustomerPortal {
     constructor(bamazonDbAPI) {
 
         this.bamazonDbAPI = bamazonDbAPI;
+        this.inquirerPrompts = new InquirerPrompts();
+
+        this.productsTableRows = null;
+
+        this.productId = null;
+        this.productUnits = null;
 
         this.assignListeners();
     }
@@ -21,6 +24,8 @@ class BamazonCustomerPortal {
     assignListeners() {
 
         process.on(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
+
+            this.productsTableRows = rows;
 
             printTable.printProductsTable(rows, fields);
 
@@ -35,95 +40,141 @@ class BamazonCustomerPortal {
 
     promptProductToPurchase() {
 
-        terminal.hideCursor("");  //with ("") it shows the cursor
-        // terminal.white("   Which product would you like to purchase ?\n\n").gray("   ↑↓ + <enter>\n");
+        const promptMSG = "Which product id to purchase?  [id] →";
 
+        const name = "id";
 
-        const history = ['John', 'Jack', 'Joey', 'Billy', 'Bob'];
+        const validateFunc = (userInput) => {
 
-        const autoComplete = [
-            'Barack Obama', 'George W. Bush', 'Bill Clinton', 'George Bush',
-            'Ronald W. Reagan', 'Jimmy Carter', 'Gerald Ford', 'Richard Nixon',
-            'Lyndon Johnson', 'John F. Kennedy', 'Dwight Eisenhower',
-            'Harry Truman', 'Franklin Roosevelt'
-        ];
+            if (!this.inquirerPrompts.isNumber(userInput)) {
 
-        terminal.white("   Which product would you like to purchase? : ");
+                return false;
+            }
 
+            if (!this.inquirerPrompts.isInteger(userInput)) {
 
-        const options2 = {
-            style: terminal.cyan,
-            selectedStyle: terminal.brightGreen
+                return false;
+            }
+
+            if (!this.doesProductTableIdExist(userInput)) {
+
+                setTimeout(() => { terminal.brightRed("  [id] is not valid"); }, 0);
+
+                return false;
+            }
+
+            if (!this.isEnoughStockForId(userInput, 1)) {
+
+                setTimeout(() => { terminal.brightRed("  product is out of [stock]"); }, 0);
+
+                return false;
+            }
+
+            return true;
         };
 
-        const options =
-        {
-            history: history,
-            autoComplete: autoComplete,
-            autoCompleteMenu: options2,
-
-            autoCompleteHint: true,
-            hintStyle: terminal.gray,
-            style: terminal.cyan
-        };
-
-   
-
-        
-        const promise = terminal.inputField(options).promise;
-
-        // function blah(error, input) {
-
-        //     terminal.green("\nYour name is '%s'\n", input);
-        //     process.exit();
-        // }
+        const promise = this.inquirerPrompts.inputPrompt(promptMSG, name, validateFunc);
 
         promise.then((choice) => {
-   
-            console.log("\n\n" + choice);
-            terminal.grabInput(false); 
+
+            this.productId = parseInt(choice[name]);
+
+            setTimeout(() => {
+
+                terminal("\n");
+
+                this.promptNumberOfUnits();
+
+            }, 500);
         });
-
-        // var input = await term.inputField(options).promise;
-
-        // term.green("\nYour name is '%s'\n", input);
-
-
-        // function (error, input) {
-
-        //     term.green("\nYour name is '%s'\n", input);
-        //     process.exit();
-        // }
-
-
-        // const items = ["Customer".padEnd(13), "Manager".padEnd(13), "Supervisor".padEnd(13)];
-
-        // const options =
-        // {
-        //     leftPadding: "   ",
-        //     style: terminal.cyan,
-        //     selectedStyle: terminal.brightGreen.bgGray,
-        //     submittedStyle: terminal.brightGreen
-        // };
-
-        // const promise = terminal.singleColumnMenu(items, options).promise;
-
-        // promise.then((choice) => {
-
-        // terminal.grabInput(false);   //releases prompt code from hanging app
-
-        // this.portalChoice = choice.selectedText.trim().toLowerCase();
-
-        // setTimeout(() => {
-
-        //     this.erasePreviousLines();
-
-        //     this.enterPortal();
-
-        // }, 1000);
-        // });
     }
 
+    promptNumberOfUnits() {
+
+        const promptMSG = "How many units to purchase? [stock] →";
+
+        const name = "units";
+
+        const validateFunc = (userInput) => {
+
+            if (!this.inquirerPrompts.isNumber(userInput)) {
+
+                return false;
+            }
+
+            if (!this.inquirerPrompts.isInteger(userInput)) {
+
+                return false;
+            }
+
+            if (!this.inquirerPrompts.isPositiveInteger(userInput)) {
+
+                return false;
+            }
+
+            if (!this.isEnoughStockForId(this.productId, userInput)) {
+
+                setTimeout(() => { terminal.brightRed("  not enough [stock] to place order"); }, 0);
+
+                return false;
+            }
+
+            return true;
+        };
+
+        const promise = this.inquirerPrompts.inputPrompt(promptMSG, name, validateFunc);
+
+        promise.then((choice) => {
+
+            this.productUnits = parseInt(choice[name]);
+
+            setTimeout(() => {
+
+                terminal.brightGreen("Purchased...  needs work on price, etc.");
+
+            }, 500);
+        });
+    }
+
+    doesProductTableIdExist(idToCheck) {
+
+        if (this.productsTableRows === null) {
+
+            throw new Error("BamazonCustomerPortal.doesProductTableIdExist()  this.productsTableRows not yet defined");
+        }
+
+        let doesIdExist = false;
+
+        for (const row of this.productsTableRows) {
+
+            if (row.id === parseInt(idToCheck)) {
+
+                doesIdExist = true;
+            }
+        }
+
+        return doesIdExist;
+    }
+
+    isEnoughStockForId(idToCheck, units) {
+
+        if (this.productsTableRows === null) {
+
+            throw new Error("BamazonCustomerPortal.doesProductTableIdExist()  this.productsTableRows not yet defined");
+        }
+
+        let isEnoughStock = false;
+
+        for (const row of this.productsTableRows) {
+
+            if (row.id === parseInt(idToCheck) && row.stock >= parseInt(units)) {
+
+                isEnoughStock = true;
+            }
+        }
+
+        return isEnoughStock;
+    }
 }
 
 

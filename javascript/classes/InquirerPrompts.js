@@ -11,9 +11,9 @@ class InquirerPrompts {
 
         this.listPromptLength = null;
 
-        // this.areListenersOn = false;
+        this.tidyListPromptBound = this.tidyListPrompt.bind(this);
 
-        process.stdin.on('keypress', this.tidyListPrompt.bind(this));
+        this.tidyInputPromptMessageBound = this.tidyInputPromptMessage.bind(this);
     }
 
     listPrompt(promptMsg, name, choicesArray) {
@@ -22,7 +22,7 @@ class InquirerPrompts {
 
         for (let i = 0; i < choicesArray.length; i++) {
 
-           choicesArray[i] = " " + choicesArray[i];  //padded for indenting purposes
+            choicesArray[i] = " " + choicesArray[i];  //padded for indenting purposes
         }
 
         terminal.white(`${promptMsg}\n\n`).gray("   ↑↓ + <enter>\n");
@@ -38,34 +38,26 @@ class InquirerPrompts {
 
         this.listPromptLength = choicesArray.length;
 
-        // this.areListenersOn = true;
-
         const promise = inquirer.prompt(promptOBJ);
 
         this.tidyListPromptMessage(this.listPromptLength);
-  
+
+        process.stdin.on('keypress', this.tidyListPromptBound);
+
         promise.then((choice) => {
 
-            // this.areListenersOn = false;
+            process.stdin.off('keypress', this.tidyListPromptBound);
 
-            // process.stdin.off('keypress', this.tidyListPrompt.bind(this));
-   
             terminal.cyan("   " + choice[name].trim());
-          
         });
 
         return promise;
     }
 
     tidyListPrompt(str, key) {
-        
-        // if (!this.areListenersOn) {
-
-        //     return;
-        // }
 
         if (key.name === "up" || key.name === "down") {
-     
+
             setTimeout(() => {
 
                 this.tidyListPromptMessage(this.listPromptLength);
@@ -89,6 +81,91 @@ class InquirerPrompts {
         terminal.up(distance);
         terminal.eraseLine();
         terminal.down(distance);
+    }
+
+    inputPrompt(promptMsg, name, validateFunc) {
+
+        terminal.hideCursor("");   //shows cursor when ("")
+
+        promptMsg = " " + promptMsg;  //padded for indenting purposes
+
+        const promptOBJ =
+        {
+            name: name,
+            type: "input",
+            message: promptMsg
+        };
+     
+        if (typeof validateFunc === 'function') {
+
+            promptOBJ.validate = validateFunc;
+        }
+
+        const promise = inquirer.prompt(promptOBJ);
+
+        this.tidyInputPromptMessage();
+
+        process.stdin.on('keypress', this.tidyInputPromptMessageBound);
+
+        promise.then(() => {
+
+            process.stdin.off('keypress', this.tidyInputPromptMessageBound);
+
+            terminal.hideCursor();
+        });
+
+        return promise;
+    }
+
+    tidyInputPromptMessage() {
+
+        setTimeout(() => {
+
+            terminal.saveCursor();
+            terminal.column(0);
+            terminal.black(" ");
+            terminal.up(1);
+            terminal.column(0);
+            terminal.black(" ");
+            terminal.restoreCursor();
+
+        }, 0);  //end of event loop to erase inquirer text
+    }
+
+    isNumber(userInput) {
+
+        if (isNaN(userInput)) {
+
+            setTimeout(() => { terminal.brightRed("  please enter a number"); }, 0);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    isInteger(userInput) {
+
+        if (parseInt(userInput) !== parseFloat(userInput)) {
+
+            setTimeout(() => { terminal.brightRed("  please enter an integer"); }, 0);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    isPositiveInteger(userInput) {
+
+        if (parseInt(userInput) <= 0) {
+
+            setTimeout(() => { terminal.brightRed("  please enter a postive integer"); }, 0);
+
+            return false;
+        }
+
+        return true;
     }
 }
 
