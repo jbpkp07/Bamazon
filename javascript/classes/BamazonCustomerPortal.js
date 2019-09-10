@@ -2,7 +2,8 @@
 /* global require, process, module */
 
 const terminal = require("terminal-kit").terminal;
-const printTable = require('../functions/printTable.js');
+const table = require('../functions/printTableFunctions.js');
+const header = require('../functions/printHeaderFunctions.js');
 const InquirerPrompts = require('./InquirerPrompts.js');
 
 
@@ -17,23 +18,18 @@ class BamazonCustomerPortal {
 
         this.productId = null;
         this.productUnits = null;
-
-        this.assignListeners();
-    }
-
-    assignListeners() {
-
-        process.on(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
-
-            this.productsTableRows = rows;
-
-            printTable.printProductsTable(rows, fields);
-
-            this.promptProductToPurchase();
-        });
     }
 
     enterPortal() {
+
+        process.once(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
+
+            this.productsTableRows = rows;
+
+            table.printProductsTable(rows, fields);
+
+            this.promptProductToPurchase();
+        });
 
         this.bamazonDbAPI.getAllProducts();
     }
@@ -130,10 +126,68 @@ class BamazonCustomerPortal {
 
             setTimeout(() => {
 
-                terminal.brightGreen("Purchased...  needs work on price, etc.");
+                terminal("\n");
+
+                terminal.white("   Placing order... → ");
+
+                this.placeOrder();
 
             }, 500);
         });
+    }
+
+    placeOrder() {
+
+        process.once(this.bamazonDbAPI.updateProductStock_Event, () => {
+
+            terminal.brightGreen("Done!");
+
+            setTimeout(() => {
+    
+                header.clearScreenBelowHeader();
+
+                process.once(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
+
+                    this.productsTableRows = rows;
+        
+                    table.printProductsTable(rows, fields);
+                });
+        
+                this.bamazonDbAPI.getAllProducts();
+
+            }, 2000);
+        });
+
+        process.once(this.bamazonDbAPI.failedToUpdateProductStock_Event, () => {
+
+            terminal.red("Failed ").gray("Not enough current [stock] to satisy order, starting order again:  ");
+
+            let count = 5;
+
+            terminal.white(count.toString());
+            count--;
+            terminal.left(1);
+
+            const intervalId = setInterval(() => {
+            
+                terminal.white(count.toString());
+                count--;
+                terminal.left(1);
+
+            }, 1000);
+
+            setTimeout(() => {
+    
+                clearInterval(intervalId);
+
+                header.clearScreenBelowHeader();
+
+                this.enterPortal();
+
+            }, 6000);
+        });
+
+        this.bamazonDbAPI.updateProductStock(this.productId, this.productUnits, false);
     }
 
     doesProductTableIdExist(idToCheck) {

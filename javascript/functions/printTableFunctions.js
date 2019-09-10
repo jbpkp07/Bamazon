@@ -65,7 +65,7 @@ function printProductsTable(rows, fields) {
 }
 
 
-module.exports = {
-
+module.exports = 
+{
     printProductsTable: printProductsTable
 };

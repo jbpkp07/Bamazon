@@ -4,6 +4,9 @@
 const terminal = require("terminal-kit").terminal;
 
 
+const xCoord = 1;
+const yCoord = 20;
+
 function printHeader() {
 
     terminal.reset();
@@ -27,5 +30,15 @@ function printHeader() {
     terminal("\n\n");
 }
 
+function clearScreenBelowHeader() {
 
-module.exports = printHeader;
+    terminal.moveTo(xCoord, yCoord);
+
+    terminal.eraseDisplayBelow();
+}
+
+module.exports = 
+{
+    printHeader: printHeader,
+    clearScreenBelowHeader: clearScreenBelowHeader
+};

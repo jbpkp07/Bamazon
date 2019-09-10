@@ -2,7 +2,7 @@
 /* global require, process, module */
 
 const terminal = require("terminal-kit").terminal;
-const printHeader = require('../functions/printHeader.js');
+const header = require('../functions/printHeaderFunctions.js');
 const InquirerPrompts = require('./InquirerPrompts.js');
 const BamazonDatabaseAPI = require('./BamazonDatabaseAPI.js');
 const BamazonCustomerPortal = require('./BamazonCustomerPortal.js');
@@ -27,8 +27,6 @@ class Bamazon {
 
         process.once(this.bamazonDbAPI.connected_Event, () => {
 
-            terminal.saveCursor();
-
             this.choosePortal();
         });
 
@@ -45,7 +43,7 @@ class Bamazon {
 
     startApp() {
 
-        printHeader();
+        header.printHeader();
 
         this.bamazonDbAPI.connect();
     }
@@ -54,7 +52,7 @@ class Bamazon {
 
         const promptMSG = "Choose Portal...";
         const name = "portal";
-        const portals = ["Customer", "Manager", "Supervisor"];  
+        const portals = ["Customer", "Manager (not yet implemented)", "Supervisor (not yet implemented)"];  
         
         const promise = this.inquirerPrompts.listPrompt(promptMSG, name, portals);
 
@@ -64,7 +62,7 @@ class Bamazon {
             
             setTimeout(() => {
         
-                this.clearScreenBelowHeader();
+                header.clearScreenBelowHeader();
  
                 this.enterPortal();
 
@@ -89,13 +87,6 @@ class Bamazon {
         }
 
         // this.bamazonDbAPI.disconnect();
-    }
-
-    clearScreenBelowHeader() {
-
-        terminal.restoreCursor();
-
-        terminal.eraseDisplayBelow();
     }
 
     exit() {
