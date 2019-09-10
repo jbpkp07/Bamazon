@@ -30,9 +30,14 @@ function printHeader() {
     terminal("\n\n");
 }
 
-function clearScreenBelowHeader() {
+function moveCursorToTop() {
 
     terminal.moveTo(xCoord, yCoord);
+}
+
+function clearScreenBelowHeader() {
+
+    moveCursorToTop();
 
     terminal.eraseDisplayBelow();
 }
@@ -40,5 +45,6 @@ function clearScreenBelowHeader() {
 module.exports = 
 {
     printHeader: printHeader,
+    moveCursorToTop: moveCursorToTop,
     clearScreenBelowHeader: clearScreenBelowHeader
 };

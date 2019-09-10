@@ -1,12 +1,12 @@
 "use strict";
 /* global require, module, process */
 
+const InquirerPrompts = require('./InquirerPrompts.js');
 const ConnectionDetails = require('./MySQLConnectionDetails.js');
 const terminal = require("terminal-kit").terminal;
 const mysql2 = require('mysql2/promise');
 const inquirer = require('inquirer');
 const fs = require('fs');
-
 
 
 class MySQLDatabase {
@@ -117,16 +117,18 @@ class MySQLDatabase {
 
             promise.then((answer) => {
 
-                terminal("\n");
+                setTimeout(() => {
+                    
+                    if (answer.seedDB) {
 
-                if (answer.seedDB) {
+                        this.seedDatabase();
+                    }
+                    else {
+         
+                        this.exit();
+                    }
 
-                    this.seedDatabase();
-                }
-                else {
-
-                    this.exit();
-                }
+                }, 500);
             });
         }
         else {
@@ -137,15 +139,15 @@ class MySQLDatabase {
 
     promptToSeedDatabase() {
 
-        const prompt =
-        {
-            name: "seedDB",
-            type: "confirm",
-            default: false,
-            message: ` Would you like to seed the [${this.database}] database`
-        };
+        this.inquirerPrompts = new InquirerPrompts();
 
-        const promise = inquirer.prompt([prompt]);
+        const promptMSG = `Would you like to seed the [${this.database}] database?`;
+
+        const name = "seedDB";
+
+        const defaultChoice = false;
+
+        const promise = this.inquirerPrompts.confirmPrompt(promptMSG, name, defaultChoice);
 
         return promise;
     }

@@ -49,6 +49,8 @@ class InquirerPrompts {
             process.stdin.off('keypress', this.tidyListPromptBound);
 
             terminal.cyan("   " + choice[name].trim());
+
+            setTimeout(() => { terminal("\n\n"); }, 0);
         });
 
         return promise;
@@ -56,7 +58,7 @@ class InquirerPrompts {
 
     tidyListPrompt(str, key) {
 
-        if (key.name === "up" || key.name === "down") {
+        if (key.name !== "return") {
 
             setTimeout(() => {
 
@@ -95,7 +97,7 @@ class InquirerPrompts {
             type: "input",
             message: promptMsg
         };
-     
+
         if (typeof validateFunc === 'function') {
 
             promptOBJ.validate = validateFunc;
@@ -112,6 +114,40 @@ class InquirerPrompts {
             process.stdin.off('keypress', this.tidyInputPromptMessageBound);
 
             terminal.hideCursor();
+
+            setTimeout(() => { terminal("\n"); }, 0);
+        });
+
+        return promise;
+    }
+
+    confirmPrompt(promptMsg, name, defaultChoice) {
+
+        terminal.hideCursor("");   //shows cursor when ("")
+
+        promptMsg = " " + promptMsg;  //padded for indenting purposes
+
+        const promptOBJ =
+        {
+            name: name,
+            type: "confirm",
+            default: defaultChoice,
+            message: promptMsg
+        };
+
+        const promise = inquirer.prompt(promptOBJ);
+
+        this.tidyInputPromptMessage();
+
+        process.stdin.on('keypress', this.tidyInputPromptMessageBound);
+
+        promise.then(() => {
+
+            process.stdin.off('keypress', this.tidyInputPromptMessageBound);
+ 
+            terminal.hideCursor();
+            
+            setTimeout(() => { terminal("\n"); }, 0);
         });
 
         return promise;
@@ -130,6 +166,34 @@ class InquirerPrompts {
             terminal.restoreCursor();
 
         }, 0);  //end of event loop to erase inquirer text
+    }
+
+    printCountdown(count) {
+
+        return new Promise((resolve) => {
+
+            terminal.brightWhite("   Continuing in: ");
+            terminal.gray(count.toString() + " ");
+            terminal.left(count.toString().length + 1);
+
+            const intervalId = setInterval(() => {
+
+                count--;
+
+                if (count === -1) {
+
+                    clearInterval(intervalId);
+
+                    resolve();
+                }
+                else {
+
+                    terminal.gray(count.toString() + " ");
+                    terminal.left(count.toString().length + 1);
+                }
+
+            }, 1000);
+        });
     }
 
     isNumber(userInput) {

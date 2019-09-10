@@ -18,18 +18,82 @@ class BamazonCustomerPortal {
 
         this.productId = null;
         this.productUnits = null;
+
+        this.doPromptToContinueShopping = false;
+
+        this.assignListeners();
     }
 
-    enterPortal() {
+    assignListeners() {
 
-        process.once(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
+        this.getAllProducts_Listener();
+
+        this.updateProductStock_Listener();
+
+        this.failedToUpdateProductStock_Listener();
+    }
+
+    getAllProducts_Listener() {
+
+        process.on(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
 
             this.productsTableRows = rows;
 
             table.printProductsTable(rows, fields);
 
-            this.promptProductToPurchase();
+            if (!this.doPromptToContinueShopping) {
+
+                this.promptProductToPurchase();
+            }
+            else {
+
+                this.doPromptToContinueShopping = false;
+
+                terminal.restoreCursor();
+
+                this.promptContinueShopping();
+            }
         });
+    }
+
+    updateProductStock_Listener() {
+
+        process.on(this.bamazonDbAPI.updateProductStock_Event, () => {
+  
+            terminal.brightGreen("Done!\n\n");
+
+            let cost = this.getTotalPurchaseCost(this.productId, this.productUnits);
+
+            cost = "$" + cost.toFixed(2);
+
+            terminal.gray("   Total cost of purchase: → ").brightGreen(`${cost}\n\n`);
+
+            terminal.saveCursor();
+
+            header.moveCursorToTop();
+
+            this.doPromptToContinueShopping = true;
+
+            this.bamazonDbAPI.getAllProducts();
+        });
+    }
+
+    failedToUpdateProductStock_Listener() {
+
+        process.on(this.bamazonDbAPI.failedToUpdateProductStock_Event, () => {
+    
+            terminal.red("Failed ").gray("Not enough current [stock] to satisy order, starting order again.\n\n");
+
+            this.inquirerPrompts.printCountdown(10).then(() => {
+
+                header.clearScreenBelowHeader();
+
+                this.enterPortal();
+            });
+        });
+    }
+
+    enterPortal() {
 
         this.bamazonDbAPI.getAllProducts();
     }
@@ -76,8 +140,6 @@ class BamazonCustomerPortal {
             this.productId = parseInt(choice[name]);
 
             setTimeout(() => {
-
-                terminal("\n");
 
                 this.promptNumberOfUnits();
 
@@ -126,10 +188,6 @@ class BamazonCustomerPortal {
 
             setTimeout(() => {
 
-                terminal("\n");
-
-                terminal.white("   Placing order... → ");
-
                 this.placeOrder();
 
             }, 500);
@@ -138,56 +196,42 @@ class BamazonCustomerPortal {
 
     placeOrder() {
 
-        process.once(this.bamazonDbAPI.updateProductStock_Event, () => {
-
-            terminal.brightGreen("Done!");
-
-            setTimeout(() => {
-    
-                header.clearScreenBelowHeader();
-
-                process.once(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
-
-                    this.productsTableRows = rows;
-        
-                    table.printProductsTable(rows, fields);
-                });
-        
-                this.bamazonDbAPI.getAllProducts();
-
-            }, 2000);
-        });
-
-        process.once(this.bamazonDbAPI.failedToUpdateProductStock_Event, () => {
-
-            terminal.red("Failed ").gray("Not enough current [stock] to satisy order, starting order again:  ");
-
-            let count = 5;
-
-            terminal.white(count.toString());
-            count--;
-            terminal.left(1);
-
-            const intervalId = setInterval(() => {
-            
-                terminal.white(count.toString());
-                count--;
-                terminal.left(1);
-
-            }, 1000);
-
-            setTimeout(() => {
-    
-                clearInterval(intervalId);
-
-                header.clearScreenBelowHeader();
-
-                this.enterPortal();
-
-            }, 6000);
-        });
+        terminal.gray("   Placing order... → ");
 
         this.bamazonDbAPI.updateProductStock(this.productId, this.productUnits, false);
+    }
+
+    promptContinueShopping() {
+
+        const promptMSG = "Would you like to continue shopping?";
+
+        const name = "choice";
+
+        const defaultChoice = true;
+
+        const promise = this.inquirerPrompts.confirmPrompt(promptMSG, name, defaultChoice);
+
+        promise.then((choice) => {
+
+            if (choice[name]) {
+
+                setTimeout(() => {
+                
+                    header.clearScreenBelowHeader();
+    
+                    this.enterPortal();
+    
+                }, 500);
+            }
+            else {
+
+                setTimeout(() => {
+                    
+                    this.bamazonDbAPI.disconnect();
+
+                }, 500);
+            }
+        });
     }
 
     doesProductTableIdExist(idToCheck) {
@@ -229,9 +273,34 @@ class BamazonCustomerPortal {
 
         return isEnoughStock;
     }
+
+    getPriceForId(idToCheck) {
+
+        if (this.productsTableRows === null) {
+
+            throw new Error("BamazonCustomerPortal.doesProductTableIdExist()  this.productsTableRows not yet defined");
+        }
+
+        let price = 0;
+
+        for (const row of this.productsTableRows) {
+
+            if (row.id === parseInt(idToCheck)) {
+
+                price = row.price;
+            }
+        }
+
+        return price;
+    }
+
+    getTotalPurchaseCost(id, units) {
+
+        const price = this.getPriceForId(id);
+
+        return price * units;
+    }
 }
-
-
 
 
 module.exports = BamazonCustomerPortal;
