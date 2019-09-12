@@ -1,7 +1,7 @@
 # Bamazon
 
 
-### Screenshots:
+#### Screenshots:
 
 ![portal-chooser](https://github.com/jbpkp07/Bamazon/blob/master/images/1.png)
 
