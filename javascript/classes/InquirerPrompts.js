@@ -208,6 +208,18 @@ class InquirerPrompts {
         return true;
     }
 
+    isPositiveNumber(userInput) {
+
+        if (parseFloat(userInput) <= 0) {
+
+            setTimeout(() => { terminal.brightRed("  please enter a postive number"); }, 0);
+
+            return false;
+        }
+
+        return true;
+    }
+
     isInteger(userInput) {
 
         if (parseInt(userInput) !== parseFloat(userInput)) {
@@ -225,6 +237,18 @@ class InquirerPrompts {
         if (parseInt(userInput) <= 0) {
 
             setTimeout(() => { terminal.brightRed("  please enter a postive integer"); }, 0);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    isLengthGreaterThanValue(userInput, value) {
+
+        if (userInput.length <= value) {
+
+            setTimeout(() => { terminal.brightRed(`  please enter at least ${value + 1} characters`); }, 0);
 
             return false;
         }

@@ -95,7 +95,11 @@ class BamazonCustomerPortal {
 
     enterPortal() {
 
-        this.bamazonDbAPI.getAllProducts();
+        setTimeout(() => {
+            
+            this.bamazonDbAPI.getAllProducts();
+
+        }, 500);
     }
 
     promptProductToPurchase() {
@@ -221,7 +225,7 @@ class BamazonCustomerPortal {
     
                     this.enterPortal();
     
-                }, 500);
+                }, 1000);
             }
             else {
 
@@ -229,7 +233,7 @@ class BamazonCustomerPortal {
                     
                     this.bamazonDbAPI.disconnect();
 
-                }, 500);
+                }, 1000);
             }
         });
     }

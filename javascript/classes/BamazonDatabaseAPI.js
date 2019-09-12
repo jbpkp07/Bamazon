@@ -16,6 +16,7 @@ class BamazonDatabaseAPI {
         this.disconnected_Event = "bamazonDBDisconnected";
         this.getAllProducts_Event = "bamazonGotAllProducts";
         this.getProductById_Event = "bamazonGotProductById";
+        this.getProductsByStockAmount_Event = "bamazonGotProductsByStockAmount";
         this.updateProductStock_Event = "bamazonUpdatedProductStock";
         this.failedToUpdateProductStock_Event = "bamazonFailedToUpdateProductStock";
         this.exitOnError_Event = "bamazonExitOnError";
@@ -76,6 +77,40 @@ class BamazonDatabaseAPI {
         }).catch((error) => {
 
             terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getProductById()`).red(`] ${error}\n\n`);
+
+            process.emit(this.exitOnError_Event);
+        });
+    }
+
+    getProductsByStockAmount(amount, isLEQ) {
+
+        let operator;
+
+        if (isLEQ) {
+
+            operator = "<=";
+        }
+        else {
+
+            operator = ">=";
+        }
+
+        const query = `SELECT * FROM products WHERE stock ${operator} ?`;
+
+        const promise = this.bamazonDB.queryDatabase(query, [amount]);
+
+        promise.then(([rows, fields]) => {
+
+            for (const row of rows) {
+
+                row.price = parseFloat(row.price);  //convert from DECIMAL(9,2), which is read as a string, to javascript float
+            }
+
+            process.emit(this.getProductsByStockAmount_Event, [rows, fields]);
+
+        }).catch((error) => {
+
+            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getProductsByStockAmount()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });
