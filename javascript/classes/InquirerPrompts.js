@@ -196,7 +196,7 @@ class InquirerPrompts {
         });
     }
 
-    isNumber(userInput) {
+    validateIsNumber(userInput) {
 
         if (isNaN(userInput)) {
 
@@ -208,7 +208,12 @@ class InquirerPrompts {
         return true;
     }
 
-    isPositiveNumber(userInput) {
+    validateIsPositiveNumber(userInput) {
+
+        if (!this.validateIsNumber(userInput)) {
+
+            return false;
+        }
 
         if (parseFloat(userInput) <= 0) {
 
@@ -220,23 +225,16 @@ class InquirerPrompts {
         return true;
     }
 
-    isInteger(userInput) {
+    validateIsPositiveInteger(userInput) {
 
-        if (parseInt(userInput) !== parseFloat(userInput)) {
-
-            setTimeout(() => { terminal.brightRed("  please enter an integer"); }, 0);
+        if (!this.validateIsPositiveNumber(userInput)) {
 
             return false;
         }
 
-        return true;
-    }
+        if (parseInt(userInput) !== parseFloat(userInput)) {
 
-    isPositiveInteger(userInput) {
-
-        if (parseInt(userInput) <= 0) {
-
-            setTimeout(() => { terminal.brightRed("  please enter a postive integer"); }, 0);
+            setTimeout(() => { terminal.brightRed("  please enter an integer"); }, 0);
 
             return false;
         }

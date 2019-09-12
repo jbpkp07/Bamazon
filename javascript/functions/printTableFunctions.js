@@ -38,7 +38,7 @@ function printProductsTable(rows, fields) {
 
     const tableHeaders = [];
     const tableData = [];
-    const colAligns = ['right', 'left', 'left', 'right', 'right'];
+    const colAligns = ['right', 'left', 'left', 'right', 'right', 'right'];
 
     fields.forEach(field => tableHeaders.push(field.name));
 
@@ -48,7 +48,7 @@ function printProductsTable(rows, fields) {
 
         Object.keys(row).forEach(key => {
 
-            if (key === 'price') {
+            if (key === 'price' || key === 'sales') {
 
                 tableRow.push("$" + row[key].toFixed(2));  //Add $ to the front of price, and fix 2 decimal places
             }

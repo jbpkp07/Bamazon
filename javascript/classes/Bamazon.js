@@ -68,7 +68,7 @@ class Bamazon {
  
                 this.enterPortal();
 
-            }, 1000);
+            }, 500);
         });
     }
 

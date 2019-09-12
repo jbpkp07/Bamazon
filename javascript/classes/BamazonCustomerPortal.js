@@ -39,7 +39,14 @@ class BamazonCustomerPortal {
 
             this.productsTableRows = rows;
 
-            table.printProductsTable(rows, fields);
+            for (const row of this.productsTableRows) {
+
+                delete row.sales;  //remove sales column for customer
+            }
+
+            fields.pop();  //remove sales column for customer
+    
+            table.printProductsTable(this.productsTableRows, fields);
 
             if (!this.doPromptToContinueShopping) {
 
@@ -110,12 +117,7 @@ class BamazonCustomerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isNumber(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isInteger(userInput)) {
+            if (!this.inquirerPrompts.validateIsPositiveInteger(userInput)) {
 
                 return false;
             }
@@ -159,17 +161,7 @@ class BamazonCustomerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isNumber(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isInteger(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isPositiveInteger(userInput)) {
+            if (!this.inquirerPrompts.validateIsPositiveInteger(userInput)) {
 
                 return false;
             }
@@ -225,7 +217,7 @@ class BamazonCustomerPortal {
     
                     this.enterPortal();
     
-                }, 1000);
+                }, 500);
             }
             else {
 
@@ -233,7 +225,7 @@ class BamazonCustomerPortal {
                     
                     this.bamazonDbAPI.disconnect();
 
-                }, 1000);
+                }, 500);
             }
         });
     }

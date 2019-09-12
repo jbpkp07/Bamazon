@@ -19,7 +19,7 @@ class BamazonManagerPortal {
         this.productId = null;
         this.productUnits = null;
 
-        this.newProductToAdd = null;
+        this.newProductToAddOBJ = null;
         this.productsTableFields = null;
 
         this.assignListeners();
@@ -73,7 +73,7 @@ class BamazonManagerPortal {
                         break;
                 }
 
-            }, 1000);
+            }, 500);
         });
     }
 
@@ -139,12 +139,7 @@ class BamazonManagerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isNumber(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isInteger(userInput)) {
+            if (!this.inquirerPrompts.validateIsPositiveInteger(userInput)) {
 
                 return false;
             }
@@ -181,17 +176,7 @@ class BamazonManagerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isNumber(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isInteger(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isPositiveInteger(userInput)) {
+            if (!this.inquirerPrompts.validateIsPositiveInteger(userInput)) {
 
                 return false;
             }
@@ -244,11 +229,11 @@ class BamazonManagerPortal {
 
     addNewProduct() {
 
-        this.newProductToAdd =
+        this.newProductToAddOBJ =
             {
-                id: "--",
+                id: "##",
                 product: "------------------------------",
-                department: "----------",
+                department_id: "----------",
                 price: 0.00,
                 stock: "-----"
             };
@@ -291,7 +276,7 @@ class BamazonManagerPortal {
 
         promise.then((choice) => {
 
-            this.newProductToAdd.product = choice[name];
+            this.newProductToAddOBJ.product = choice[name];
 
             setTimeout(() => {
 
@@ -307,36 +292,42 @@ class BamazonManagerPortal {
 
     promptNewProductDepartment() {
 
-        const promptMSG = "What is the department name? [department] →";
+        process.once(this.bamazonDbAPI.getAllDepartments_Event, ([rows, fields]) => {
+            
+            const promptMSG = "What is the department name? [department]";
 
-        const name = "department";
+            const name = "department";
+            
+            const departments = [];
 
-        const validateFunc = (userInput) => {
+            for (const row of rows) {
 
-            if (!this.inquirerPrompts.isLengthGreaterThanValue(userInput, 4)) {
-
-                return false;
+                departments.push(row.id + " → " + row.name);
             }
+    
+            const promise = this.inquirerPrompts.listPrompt(promptMSG, name, departments);
+    
+            promise.then((choice) => {
+    
+                const department = choice[name].trim();
 
-            return true;
-        };
+                const department_id = parseInt(department.split(" → ")[0]);
 
-        const promise = this.inquirerPrompts.inputPrompt(promptMSG, name, validateFunc);
-
-        promise.then((choice) => {
-
-            this.newProductToAdd.department = choice[name];
-
-            setTimeout(() => {
-
-                header.clearScreenBelowHeader();
-
-                this.printAddNewProductTable();
-
-                this.promptNewProductPrice();
-
-            }, 500);
+                this.newProductToAddOBJ.department_id = department_id;
+    
+                setTimeout(() => {
+       
+                    header.clearScreenBelowHeader();
+    
+                    this.printAddNewProductTable();
+    
+                    this.promptNewProductPrice();
+    
+                }, 500);
+            });
         });
+
+        this.bamazonDbAPI.getAllDepartments();
     }
 
     promptNewProductPrice() {
@@ -347,12 +338,7 @@ class BamazonManagerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isNumber(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isPositiveNumber(userInput)) {
+            if (!this.inquirerPrompts.validateIsPositiveNumber(userInput)) {
 
                 return false;
             }
@@ -364,7 +350,7 @@ class BamazonManagerPortal {
 
         promise.then((choice) => {
 
-            this.newProductToAdd.price = parseFloat(choice[name]);
+            this.newProductToAddOBJ.price = parseFloat(choice[name]);
 
             setTimeout(() => {
 
@@ -386,17 +372,7 @@ class BamazonManagerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isNumber(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isInteger(userInput)) {
-
-                return false;
-            }
-
-            if (!this.inquirerPrompts.isPositiveInteger(userInput)) {
+            if (!this.inquirerPrompts.validateIsPositiveInteger(userInput)) {
 
                 return false;
             }
@@ -408,18 +384,45 @@ class BamazonManagerPortal {
 
         promise.then((choice) => {
 
-            this.newProductToAdd.stock = parseInt(choice[name]);
+            this.newProductToAddOBJ.stock = parseInt(choice[name]);
 
             setTimeout(() => {
-
+                
                 header.clearScreenBelowHeader();
 
                 this.printAddNewProductTable();
 
-                // this.promptNewProductPrice();
+                this.addingNewProduct();
 
             }, 500);
         });
+    }
+
+    addingNewProduct() {
+
+        process.once(this.bamazonDbAPI.addNewProduct_Event, (response) => {
+
+            if (response.result === true) {
+
+                terminal.brightGreen("Done!\n\n");
+            }
+            else {
+
+                terminal.red("Failed!").gray(" New product not added...");
+            }
+     
+            setTimeout(() => {
+                
+                header.clearScreenBelowHeader();
+
+                this.viewProductsForSale();
+
+            }, 2000);
+        });
+
+        terminal.gray("   Adding New Product... → ");
+
+        this.bamazonDbAPI.addNewProduct(this.newProductToAddOBJ);
     }
 
     printAddNewProductTable() {
@@ -428,7 +431,7 @@ class BamazonManagerPortal {
 
         terminal.white("   Add new product...\n\n");
 
-        table.printProductsTable([this.newProductToAdd], this.productsTableFields);
+        table.printProductsTable([this.newProductToAddOBJ], this.productsTableFields);
     }
 
     doesProductTableIdExist(idToCheck) {
