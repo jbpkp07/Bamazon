@@ -146,7 +146,7 @@ class BamazonCustomerPortal {
 
     placeOrder() {
 
-        terminal.gray("     ► Placing order... → ");
+        terminal.gray("  ► Placing order... → ");
 
         process.once(this.bamazonDbAPI.updateProductStock_Event, (result) => {
   
@@ -160,7 +160,7 @@ class BamazonCustomerPortal {
     
                 cost = "$" + cost.toFixed(2);
     
-                terminal.gray("     ► Total cost of purchase: → ").brightGreen(`${cost}\n\n`);
+                terminal.gray("  ► Total cost of purchase: → ").brightGreen(`${cost}\n\n`);
     
                 terminal.saveCursor();
     

@@ -64,8 +64,38 @@ function printProductsTable(rows, fields) {
     printTable(tableHeaders, tableData, colAligns);
 }
 
+function printDepartmentsTable(rows, fields) {
+
+    const tableHeaders = [];
+    const tableData = [];
+    const colAligns = ['right', 'left', 'right', 'right', 'right'];
+
+    fields.forEach(field => tableHeaders.push(field.name));
+
+    for (const row of rows) {
+
+        const tableRow = [];
+
+        Object.keys(row).forEach(key => {
+
+            if (key === 'overhead' || key === 'sales' || key === 'profit') {
+
+                tableRow.push("$" + row[key].toFixed(2));  //Add $ to the front of price, and fix 2 decimal places
+            }
+            else {
+
+                tableRow.push(row[key]);
+            }
+        });
+
+        tableData.push(tableRow);
+    }
+
+    printTable(tableHeaders, tableData, colAligns);
+}
 
 module.exports = 
 {
-    printProductsTable: printProductsTable
+    printProductsTable: printProductsTable,
+    printDepartmentsTable: printDepartmentsTable
 };

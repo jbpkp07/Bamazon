@@ -21,6 +21,8 @@ class BamazonDatabaseAPI {
         this.updateProductSales_Event = "bamazonUpdatedProductSales";
         this.addNewProduct_Event = "bamazonAddedNewProduct";
         this.getAllDepartments_Event = "bamazonGotAllDepartmentsNames";
+        this.addNewDepartment_Event = "bamazonAddedNewDepartment";
+        this.getProductSalesByDepartment_Event = "bamazonGotProductSalesByDepartment";
         this.exitOnError_Event = "bamazonExitOnError";
     }
 
@@ -49,7 +51,7 @@ class BamazonDatabaseAPI {
             appendedCondition = "";
         }
 
-        const query = `SELECT  products.id, 
+        const query = `SELECT   products.id, 
 		                        products.product, 
                                 departments.name AS department, 
                                 products.price, 
@@ -234,11 +236,79 @@ class BamazonDatabaseAPI {
 
         promise.then(([rows, fields]) => {
 
+            for (const row of rows) {
+
+                row.overhead = parseFloat(row.overhead);  //convert from DECIMAL(9,2), which is read as a string, to javascript float
+            }
+
             process.emit(this.getAllDepartments_Event, [rows, fields]);
 
         }).catch((error) => {
 
             terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`getAllDepartments()`).red(`] ${error}\n\n`);
+
+            process.emit(this.exitOnError_Event);
+        });
+    }
+
+    addNewDepartment(newDepartmentOBJ) {
+
+        if (newDepartmentOBJ.id) {
+
+            delete newDepartmentOBJ.id;  //Auto increments, don't specify product id
+        }
+
+        const query = `INSERT INTO departments SET ?`;
+
+        const promise = this.bamazonDB.queryDatabase(query, newDepartmentOBJ);
+
+        promise.then(([results]) => {
+
+            if (results.affectedRows > 0) {
+
+                process.emit(this.addNewDepartment_Event, { wasSuccessful: true });
+            }
+            else {
+
+                process.emit(this.addNewDepartment_Event, { wasSuccessful: false });
+            }
+
+        }).catch((error) => {
+
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`addNewDepartment()`).red(`] ${error}\n\n`);
+
+            process.emit(this.exitOnError_Event);
+        });
+    }
+
+    getProductSalesByDeparment() {
+
+        const query =   `SELECT
+                            departments.id AS id,
+                            departments.name AS department,
+                            departments.overhead AS overhead,
+                            SUM(IFNULL(products.sales, 0)) AS sales,
+                            SUM(IFNULL(products.sales, 0)) - departments.overhead AS profit
+                        FROM departments
+                        LEFT JOIN products ON products.department_id = departments.id
+                        GROUP BY departments.id;`;
+
+        const promise = this.bamazonDB.queryDatabase(query);
+
+        promise.then(([rows, fields]) => {
+
+            for (const row of rows) {
+
+                row.overhead = parseFloat(row.overhead);  //convert from DECIMAL(9,2), which is read as a string, to javascript float
+                row.sales    = parseFloat(row.sales);     //convert from DECIMAL(9,2), which is read as a string, to javascript float
+                row.profit   = parseFloat(row.profit);    //convert from DECIMAL(9,2), which is read as a string, to javascript float
+            }
+
+            process.emit(this.getProductSalesByDepartment_Event, [rows, fields]);
+
+        }).catch((error) => {
+
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`getProductSalesByDeparment()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });

@@ -34,7 +34,7 @@ class BamazonManagerPortal {
 
     promptChooseAction() {
 
-        const promptMSG = "Choose Action...";
+        const promptMSG = "Choose action...";
         const name = "action";
         const actions = ["View products for sale", "View low inventory", "Add to inventory", "Add new product", "Exit"];
 
@@ -223,7 +223,7 @@ class BamazonManagerPortal {
             this.promptChooseAction();
         });
 
-        terminal.gray("     ► Adding Stock... → ");
+        terminal.gray("  ► Adding stock... → ");
 
         this.bamazonDbAPI.updateProductStock(this.productId, "+", this.productUnits);
     }
@@ -421,7 +421,7 @@ class BamazonManagerPortal {
             }, 2000);
         });
 
-        terminal.gray("     ► Adding New Product... → ");
+        terminal.gray("  ► Adding new product... → ");
 
         this.bamazonDbAPI.addNewProduct(this.newProductToAddOBJ);
     }

@@ -7,6 +7,7 @@ const InquirerPrompts = require('./InquirerPrompts.js');
 const BamazonDatabaseAPI = require('./BamazonDatabaseAPI.js');
 const BamazonCustomerPortal = require('./BamazonCustomerPortal.js');
 const BamazonManagerPortal = require('./BamazonManagerPortal.js');
+const BamazonSupervisorPortal = require('./BamazonSupervisorPortal.js');
 
 
 class Bamazon {
@@ -21,6 +22,7 @@ class Bamazon {
 
         this.bamazonCustomerPortal = null;
         this.bamazonManagerPortal = null;
+        this.bamazonSupervisorPortal = null;
 
         this.assignListeners();
     }
@@ -52,9 +54,9 @@ class Bamazon {
 
     choosePortal() {
 
-        const promptMSG = "Choose Portal...";
+        const promptMSG = "Choose portal...";
         const name = "portal";
-        const portals = ["Customer", "Manager", "Supervisor (not yet implemented)", "Exit"];
+        const portals = ["Customer", "Manager", "Supervisor", "Exit"];
 
         const promise = this.inquirerPrompts.listPrompt(promptMSG, name, portals);
 
@@ -85,7 +87,8 @@ class Bamazon {
                 this.bamazonManagerPortal.enterPortal();
                 break;
             case 'Supervisor':
-
+                this.bamazonSupervisorPortal = new BamazonSupervisorPortal(this.bamazonDbAPI);
+                this.bamazonSupervisorPortal.enterPortal();
                 break;
             case 'Exit':
                 this.bamazonDbAPI.disconnect();
