@@ -18,7 +18,7 @@ class BamazonDatabaseAPI {
         this.getProductById_Event = "bamazonGotProductById";
         this.getProductsByStockAmount_Event = "bamazonGotProductsByStockAmount";
         this.updateProductStock_Event = "bamazonUpdatedProductStock";
-        this.failedToUpdateProductStock_Event = "bamazonFailedToUpdateProductStock";
+        this.updateProductSales_Event = "bamazonUpdatedProductSales";
         this.addNewProduct_Event = "bamazonAddedNewProduct";
         this.getAllDepartments_Event = "bamazonGotAllDepartmentsNames";
         this.exitOnError_Event = "bamazonExitOnError";
@@ -49,7 +49,7 @@ class BamazonDatabaseAPI {
             appendedCondition = "";
         }
 
-        const query =  `SELECT  products.id, 
+        const query = `SELECT  products.id, 
 		                        products.product, 
                                 departments.name AS department, 
                                 products.price, 
@@ -58,7 +58,7 @@ class BamazonDatabaseAPI {
                         FROM products
                         INNER JOIN departments ON products.department_id = departments.id
                         ${appendedCondition}
-                        ORDER BY products.id`;       
+                        ORDER BY products.id`;
         return query;
     }
 
@@ -80,7 +80,7 @@ class BamazonDatabaseAPI {
 
         }).catch((error) => {
 
-            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getAllProducts()`).red(`] ${error}\n\n`);
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`getAllProducts()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });
@@ -104,26 +104,15 @@ class BamazonDatabaseAPI {
 
         }).catch((error) => {
 
-            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getProductById()`).red(`] ${error}\n\n`);
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`getProductById()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });
     }
 
-    getProductsByStockAmount(amount, isLEQ) {
+    getProductsByStockAmount(sqlComparisonOperatorSTR, amount) {
 
-        let operator;
-
-        if (isLEQ) {
-
-            operator = "<=";
-        }
-        else {
-
-            operator = ">=";
-        }
-
-        const query = this.getAllProductsQuery(`WHERE products.stock ${operator} ?`);
+        const query = this.getAllProductsQuery(`WHERE products.stock ${sqlComparisonOperatorSTR} ?`);
 
         const promise = this.bamazonDB.queryDatabase(query, [amount]);
 
@@ -139,35 +128,25 @@ class BamazonDatabaseAPI {
 
         }).catch((error) => {
 
-            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getProductsByStockAmount()`).red(`] ${error}\n\n`);
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`getProductsByStockAmount()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });
     }
 
-    updateProductStock(id, units, isAddingStock) {
+    updateProductStock(id, sqlArithmeticOperatorSTR, units) {
 
         process.once(this.getProductById_Event, ([rows, fields]) => {
 
-            let currentStock = rows[0].stock;
-            let newStock;
+            const currentStock = rows[0].stock;
 
-            if (isAddingStock) {
+            const newStock = eval(`${currentStock} ${sqlArithmeticOperatorSTR} ${units}`);
 
-                newStock = currentStock + units;
-            }
-            else {
+            if (newStock < 0) {
 
-                if ((currentStock - units) >= 0) {
+                process.emit(this.updateProductStock_Event, { wasSuccessful: false });
 
-                    newStock = currentStock - units;
-                }
-                else {
-
-                    process.emit(this.failedToUpdateProductStock_Event);
-
-                    return;
-                }
+                return;
             }
 
             const promise = this.bamazonDB.queryDatabase('UPDATE products SET stock = ? WHERE id = ?', [newStock, id]);
@@ -176,22 +155,45 @@ class BamazonDatabaseAPI {
 
                 if (results.changedRows > 0) {
 
-                    process.emit(this.updateProductStock_Event);
+                    process.emit(this.updateProductStock_Event, { wasSuccessful: true });
                 }
                 else {
 
-                    process.emit(this.failedToUpdateProductStock_Event);
+                    process.emit(this.updateProductStock_Event, { wasSuccessful: false });
                 }
 
             }).catch((error) => {
 
-                terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`updateProductStock()`).red(`] ${error}\n\n`);
+                terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`updateProductStock()`).red(`] ${error}\n\n`);
 
                 process.emit(this.exitOnError_Event);
             });
         });
 
         this.getProductById(id);
+    }
+
+    updateProductSales(id, purchaseCost) {
+
+        const promise = this.bamazonDB.queryDatabase('UPDATE products SET sales = sales + ? WHERE id = ?', [purchaseCost, id]);
+
+        promise.then(([results]) => {
+
+            if (results.changedRows > 0) {
+
+                process.emit(this.updateProductSales_Event, { wasSuccessful: true });
+            }
+            else {
+
+                process.emit(this.updateProductSales_Event, { wasSuccessful: false });
+            }
+
+        }).catch((error) => {
+
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`updateProductSales()`).red(`] ${error}\n\n`);
+
+            process.emit(this.exitOnError_Event);
+        });
     }
 
     addNewProduct(newProductOBJ) {
@@ -209,16 +211,16 @@ class BamazonDatabaseAPI {
 
             if (results.affectedRows > 0) {
 
-                process.emit(this.addNewProduct_Event, {result: true});
+                process.emit(this.addNewProduct_Event, { wasSuccessful: true });
             }
             else {
 
-                process.emit(this.addNewProduct_Event, {result: false});
+                process.emit(this.addNewProduct_Event, { wasSuccessful: false });
             }
 
         }).catch((error) => {
 
-            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`addNewProduct()`).red(`] ${error}\n\n`);
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`addNewProduct()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });
@@ -236,7 +238,7 @@ class BamazonDatabaseAPI {
 
         }).catch((error) => {
 
-            terminal.red(`   Error with BamazonDatabaseAPI function [`).white(`getAllDepartments()`).red(`] ${error}\n\n`);
+            terminal.red(`  Error with BamazonDatabaseAPI function [`).white(`getAllDepartments()`).red(`] ${error}\n\n`);
 
             process.emit(this.exitOnError_Event);
         });

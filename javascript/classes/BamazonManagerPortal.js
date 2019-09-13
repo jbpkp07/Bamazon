@@ -21,12 +21,6 @@ class BamazonManagerPortal {
 
         this.newProductToAddOBJ = null;
         this.productsTableFields = null;
-
-        this.assignListeners();
-    }
-
-    assignListeners() {
-
     }
 
     enterPortal() {
@@ -48,13 +42,13 @@ class BamazonManagerPortal {
 
         promise.then((choice) => {
 
-            this.portalChoice = choice[name].trim();
+            this.portalChoice = choice[name];
 
             setTimeout(() => {
 
                 header.clearScreenBelowHeader();
 
-                switch (choice[name].trim()) {
+                switch (this.portalChoice) {
 
                     case "View products for sale":
                         this.viewProductsForSale();
@@ -108,7 +102,7 @@ class BamazonManagerPortal {
 
         setTimeout(() => {
 
-            this.bamazonDbAPI.getProductsByStockAmount(5, true);
+            this.bamazonDbAPI.getProductsByStockAmount("<=", 5);
 
         }, 500);
     }
@@ -146,7 +140,7 @@ class BamazonManagerPortal {
 
             if (!this.doesProductTableIdExist(userInput)) {
 
-                setTimeout(() => { terminal.brightRed("  [id] is not valid"); }, 0);
+                this.inquirerPrompts.printCustomValidationMSG("[id] is not valid");
 
                 return false;
             }
@@ -200,9 +194,16 @@ class BamazonManagerPortal {
 
     addingStock() {
 
-        process.once(this.bamazonDbAPI.updateProductStock_Event, () => {
+        process.once(this.bamazonDbAPI.updateProductStock_Event, (result) => {
 
-            terminal.brightGreen("Done!\n\n");
+            if (result.wasSuccessful) {
+
+                terminal.brightGreen("Done\n\n");
+            }
+            else {
+
+                terminal.red("Failed: ").gray("Was not able to update stock...\n\n");
+            }
 
             terminal.saveCursor();
 
@@ -222,9 +223,9 @@ class BamazonManagerPortal {
             this.promptChooseAction();
         });
 
-        terminal.gray("   Adding Stock... → ");
+        terminal.gray("     ► Adding Stock... → ");
 
-        this.bamazonDbAPI.updateProductStock(this.productId, this.productUnits, true);
+        this.bamazonDbAPI.updateProductStock(this.productId, "+", this.productUnits);
     }
 
     addNewProduct() {
@@ -264,7 +265,7 @@ class BamazonManagerPortal {
 
         const validateFunc = (userInput) => {
 
-            if (!this.inquirerPrompts.isLengthGreaterThanValue(userInput, 4)) {
+            if (!this.inquirerPrompts.validateIsLengthGreaterThanValue(userInput, 4)) {
 
                 return false;
             }
@@ -276,7 +277,7 @@ class BamazonManagerPortal {
 
         promise.then((choice) => {
 
-            this.newProductToAddOBJ.product = choice[name];
+            this.newProductToAddOBJ.product = choice[name].trim();
 
             setTimeout(() => {
 
@@ -309,7 +310,7 @@ class BamazonManagerPortal {
     
             promise.then((choice) => {
     
-                const department = choice[name].trim();
+                const department = choice[name];
 
                 const department_id = parseInt(department.split(" → ")[0]);
 
@@ -400,15 +401,15 @@ class BamazonManagerPortal {
 
     addingNewProduct() {
 
-        process.once(this.bamazonDbAPI.addNewProduct_Event, (response) => {
+        process.once(this.bamazonDbAPI.addNewProduct_Event, (result) => {
 
-            if (response.result === true) {
+            if (result.wasSuccessful) {
 
-                terminal.brightGreen("Done!\n\n");
+                terminal.brightGreen("Done\n\n");
             }
             else {
 
-                terminal.red("Failed!").gray(" New product not added...");
+                terminal.red("Failed: ").gray("New product not added...");
             }
      
             setTimeout(() => {
@@ -420,7 +421,7 @@ class BamazonManagerPortal {
             }, 2000);
         });
 
-        terminal.gray("   Adding New Product... → ");
+        terminal.gray("     ► Adding New Product... → ");
 
         this.bamazonDbAPI.addNewProduct(this.newProductToAddOBJ);
     }
@@ -429,7 +430,7 @@ class BamazonManagerPortal {
 
         terminal.hideCursor();
 
-        terminal.white("   Add new product...\n\n");
+        terminal.white("  Add new product...\n\n");
 
         table.printProductsTable([this.newProductToAddOBJ], this.productsTableFields);
     }

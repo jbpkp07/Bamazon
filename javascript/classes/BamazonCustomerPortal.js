@@ -20,22 +20,20 @@ class BamazonCustomerPortal {
         this.productUnits = null;
 
         this.doPromptToContinueShopping = false;
-
-        this.assignListeners();
     }
 
-    assignListeners() {
+    enterPortal() {
 
-        this.getAllProducts_Listener();
+        setTimeout(() => {
+            
+            this.getAllProducts();
 
-        this.updateProductStock_Listener();
-
-        this.failedToUpdateProductStock_Listener();
+        }, 500);
     }
 
-    getAllProducts_Listener() {
+    getAllProducts() {
 
-        process.on(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
+        process.once(this.bamazonDbAPI.getAllProducts_Event, ([rows, fields]) => {
 
             this.productsTableRows = rows;
 
@@ -61,52 +59,8 @@ class BamazonCustomerPortal {
                 this.promptContinueShopping();
             }
         });
-    }
 
-    updateProductStock_Listener() {
-
-        process.on(this.bamazonDbAPI.updateProductStock_Event, () => {
-  
-            terminal.brightGreen("Done!\n\n");
-
-            let cost = this.getTotalPurchaseCost(this.productId, this.productUnits);
-
-            cost = "$" + cost.toFixed(2);
-
-            terminal.gray("   Total cost of purchase: → ").brightGreen(`${cost}\n\n`);
-
-            terminal.saveCursor();
-
-            header.moveCursorToTop();
-
-            this.doPromptToContinueShopping = true;
-
-            this.bamazonDbAPI.getAllProducts();
-        });
-    }
-
-    failedToUpdateProductStock_Listener() {
-
-        process.on(this.bamazonDbAPI.failedToUpdateProductStock_Event, () => {
-    
-            terminal.red("Failed ").gray("Not enough current [stock] to satisy order, starting order again.\n\n");
-
-            this.inquirerPrompts.printCountdown(10).then(() => {
-
-                header.clearScreenBelowHeader();
-
-                this.enterPortal();
-            });
-        });
-    }
-
-    enterPortal() {
-
-        setTimeout(() => {
-            
-            this.bamazonDbAPI.getAllProducts();
-
-        }, 500);
+        this.bamazonDbAPI.getAllProducts();
     }
 
     promptProductToPurchase() {
@@ -124,14 +78,14 @@ class BamazonCustomerPortal {
 
             if (!this.doesProductTableIdExist(userInput)) {
 
-                setTimeout(() => { terminal.brightRed("  [id] is not valid"); }, 0);
+                this.inquirerPrompts.printCustomValidationMSG("[id] is not valid");
 
                 return false;
             }
 
             if (!this.isEnoughStockForId(userInput, 1)) {
 
-                setTimeout(() => { terminal.brightRed("  product is out of [stock]"); }, 0);
+                this.inquirerPrompts.printCustomValidationMSG("product is out of [stock]");
 
                 return false;
             }
@@ -168,7 +122,7 @@ class BamazonCustomerPortal {
 
             if (!this.isEnoughStockForId(this.productId, userInput)) {
 
-                setTimeout(() => { terminal.brightRed("  not enough [stock] to place order"); }, 0);
+                this.inquirerPrompts.printCustomValidationMSG("not enough [stock] to place order");
 
                 return false;
             }
@@ -192,9 +146,44 @@ class BamazonCustomerPortal {
 
     placeOrder() {
 
-        terminal.gray("   Placing order... → ");
+        terminal.gray("     ► Placing order... → ");
 
-        this.bamazonDbAPI.updateProductStock(this.productId, this.productUnits, false);
+        process.once(this.bamazonDbAPI.updateProductStock_Event, (result) => {
+  
+            if (result.wasSuccessful) {
+
+                terminal.brightGreen("Done\n\n");
+
+                let cost = this.getTotalPurchaseCost(this.productId, this.productUnits);
+             
+                this.bamazonDbAPI.updateProductSales(this.productId, cost);  //no listener for customer portal on this update
+    
+                cost = "$" + cost.toFixed(2);
+    
+                terminal.gray("     ► Total cost of purchase: → ").brightGreen(`${cost}\n\n`);
+    
+                terminal.saveCursor();
+    
+                header.moveCursorToTop();
+    
+                this.doPromptToContinueShopping = true;
+    
+                this.enterPortal();
+            }
+            else {
+
+                terminal.red("Failed: ").gray("Not enough current [stock] to satisy order, starting order again...\n\n");
+
+                this.inquirerPrompts.printCountdown(10).then(() => {
+    
+                    header.clearScreenBelowHeader();
+    
+                    this.enterPortal();
+                });
+            }
+        });
+
+        this.bamazonDbAPI.updateProductStock(this.productId, "-", this.productUnits);
     }
 
     promptContinueShopping() {

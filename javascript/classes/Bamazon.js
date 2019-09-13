@@ -54,18 +54,18 @@ class Bamazon {
 
         const promptMSG = "Choose Portal...";
         const name = "portal";
-        const portals = ["Customer", "Manager", "Supervisor (not yet implemented)"];  
-        
+        const portals = ["Customer", "Manager", "Supervisor (not yet implemented)", "Exit"];
+
         const promise = this.inquirerPrompts.listPrompt(promptMSG, name, portals);
 
         promise.then((choice) => {
-    
-            this.portalChoice = choice[name].trim();
-            
+
+            this.portalChoice = choice[name];
+
             setTimeout(() => {
-        
+
                 header.clearScreenBelowHeader();
- 
+
                 this.enterPortal();
 
             }, 500);
@@ -86,6 +86,9 @@ class Bamazon {
                 break;
             case 'Supervisor':
 
+                break;
+            case 'Exit':
+                this.bamazonDbAPI.disconnect();
                 break;
         }
     }

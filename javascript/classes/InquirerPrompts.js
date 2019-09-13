@@ -18,14 +18,9 @@ class InquirerPrompts {
 
     listPrompt(promptMsg, name, choicesArray) {
 
-        promptMsg = "   " + promptMsg;  //padded for indenting purposes
+        promptMsg = "  " + promptMsg;  //padded for indenting purposes
 
-        for (let i = 0; i < choicesArray.length; i++) {
-
-            choicesArray[i] = " " + choicesArray[i];  //padded for indenting purposes
-        }
-
-        terminal.white(`${promptMsg}\n\n`).gray("   ↑↓ + <enter>\n");
+        terminal.white(`${promptMsg}\n\n`).gray("  ↑↓ + <enter>\n");
 
         const promptOBJ =
         {
@@ -48,7 +43,7 @@ class InquirerPrompts {
 
             process.stdin.off('keypress', this.tidyListPromptBound);
 
-            terminal.cyan("   " + choice[name].trim());
+            terminal.cyan("  " + choice[name]);
 
             setTimeout(() => { terminal("\n\n"); }, 0);
         });
@@ -89,8 +84,6 @@ class InquirerPrompts {
 
         terminal.hideCursor("");   //shows cursor when ("")
 
-        promptMsg = " " + promptMsg;  //padded for indenting purposes
-
         const promptOBJ =
         {
             name: name,
@@ -124,8 +117,6 @@ class InquirerPrompts {
     confirmPrompt(promptMsg, name, defaultChoice) {
 
         terminal.hideCursor("");   //shows cursor when ("")
-
-        promptMsg = " " + promptMsg;  //padded for indenting purposes
 
         const promptOBJ =
         {
@@ -172,7 +163,7 @@ class InquirerPrompts {
 
         return new Promise((resolve) => {
 
-            terminal.brightWhite("   Continuing in: ");
+            terminal.brightWhite("  Continuing in: ");
             terminal.gray(count.toString() + " ");
             terminal.left(count.toString().length + 1);
 
@@ -198,9 +189,11 @@ class InquirerPrompts {
 
     validateIsNumber(userInput) {
 
+        this.checkIfExit(userInput);
+
         if (isNaN(userInput)) {
 
-            setTimeout(() => { terminal.brightRed("  please enter a number"); }, 0);
+            setTimeout(() => { terminal.brightRed("  ◄ please enter a number"); }, 0);
 
             return false;
         }
@@ -210,6 +203,8 @@ class InquirerPrompts {
 
     validateIsPositiveNumber(userInput) {
 
+        this.checkIfExit(userInput);
+
         if (!this.validateIsNumber(userInput)) {
 
             return false;
@@ -217,7 +212,7 @@ class InquirerPrompts {
 
         if (parseFloat(userInput) <= 0) {
 
-            setTimeout(() => { terminal.brightRed("  please enter a postive number"); }, 0);
+            setTimeout(() => { terminal.brightRed("  ◄ please enter a postive number"); }, 0);
 
             return false;
         }
@@ -227,6 +222,8 @@ class InquirerPrompts {
 
     validateIsPositiveInteger(userInput) {
 
+        this.checkIfExit(userInput);
+
         if (!this.validateIsPositiveNumber(userInput)) {
 
             return false;
@@ -234,7 +231,7 @@ class InquirerPrompts {
 
         if (parseInt(userInput) !== parseFloat(userInput)) {
 
-            setTimeout(() => { terminal.brightRed("  please enter an integer"); }, 0);
+            setTimeout(() => { terminal.brightRed("  ◄ please enter an integer"); }, 0);
 
             return false;
         }
@@ -242,16 +239,36 @@ class InquirerPrompts {
         return true;
     }
 
-    isLengthGreaterThanValue(userInput, value) {
+    validateIsLengthGreaterThanValue(userInput, value) {
 
-        if (userInput.length <= value) {
+        this.checkIfExit(userInput);
 
-            setTimeout(() => { terminal.brightRed(`  please enter at least ${value + 1} characters`); }, 0);
+        if (userInput.trim().length <= value) {
+
+            setTimeout(() => { terminal.brightRed(`  ◄ please enter at least ${value + 1} characters`); }, 0);
 
             return false;
         }
 
         return true;
+    }
+
+    printCustomValidationMSG(errorMSG) {
+
+        errorMSG = "  ◄ " + errorMSG;
+
+        setTimeout(() => { terminal.brightRed(errorMSG); }, 0);
+    }
+
+    checkIfExit(userInput) {
+
+        if (userInput.toLowerCase().trim() === 'exit') {
+
+            terminal.hideCursor("");  //with ("") it shows the cursor
+            terminal("\n\n");
+            
+            process.exit(0);
+        }
     }
 }
 
