@@ -31,8 +31,10 @@ I am the sole developer of this application.
 
 ## Screenshots:
 
-![screenshot](https://github.com/jbpkp07/ConstructorWordGuess/blob/master/images/screenshot.png)
+#### Seeding Database
 
-![validation](https://github.com/jbpkp07/ConstructorWordGuess/blob/master/images/validation.png)
+![1](https://github.com/jbpkp07/Bamazon/blob/master/images/1-seedDatabase.png)
+
+
 
 
