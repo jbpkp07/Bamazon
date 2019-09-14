@@ -50,7 +50,9 @@ function printProductsTable(rows, fields) {
 
             if (key === 'price' || key === 'sales') {
 
-                tableRow.push("$" + row[key].toFixed(2));  //Add $ to the front of price, and fix 2 decimal places
+                const preparedCurrencySTR = "$" + row[key].toFixed(2);
+
+                tableRow.push(preparedCurrencySTR);  //Add $ to the front of price, and fix 2 decimal places
             }
             else {
 
@@ -79,8 +81,19 @@ function printDepartmentsTable(rows, fields) {
         Object.keys(row).forEach(key => {
 
             if (key === 'overhead' || key === 'sales' || key === 'profit') {
+    
+                let preparedCurrencySTR = row[key].toFixed(2);
 
-                tableRow.push("$" + row[key].toFixed(2));  //Add $ to the front of price, and fix 2 decimal places
+                if (preparedCurrencySTR[0] !== "-") {
+
+                    preparedCurrencySTR = "$" + preparedCurrencySTR;
+                }
+                else {
+
+                    preparedCurrencySTR = "-$" +  preparedCurrencySTR.substring(1);
+                }
+
+                tableRow.push(preparedCurrencySTR);  //Add $ to the front of overhead/sales/profit, and fix 2 decimal places
             }
             else {
 
