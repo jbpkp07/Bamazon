@@ -45,4 +45,51 @@ I am the sole developer of this application.
 
 ![2](https://github.com/jbpkp07/Bamazon/blob/master/images/2-choosePortal.png)
 
+#### Customer Purchase
+
+![3](https://github.com/jbpkp07/Bamazon/blob/master/images/3-customerPurchase.png)
+
+#### Customer Purchase Validation Examples:
+
+![4](https://github.com/jbpkp07/Bamazon/blob/master/images/4-customerPurchaseValidation.png)
+![5](https://github.com/jbpkp07/Bamazon/blob/master/images/5-customerPurchaseValidation.png)
+![6](https://github.com/jbpkp07/Bamazon/blob/master/images/6-customerPurchaseValidation.png)
+![7](https://github.com/jbpkp07/Bamazon/blob/master/images/7-customerPurchaseValidation.png)
+![8](https://github.com/jbpkp07/Bamazon/blob/master/images/8-customerPurchaseValidation.png)
+
+#### Manager View All Products:
+
+![9](https://github.com/jbpkp07/Bamazon/blob/master/images/9-managerViewAllProducts.png)
+
+#### Manager View Low Inventory:
+
+![10](https://github.com/jbpkp07/Bamazon/blob/master/images/10-managerViewLowInventory.png)
+
+#### Manager Add To Inventory:
+
+![11](https://github.com/jbpkp07/Bamazon/blob/master/images/11-managerAddToInventory.png)
+
+#### Manager Add New Product:
+
+![12](https://github.com/jbpkp07/Bamazon/blob/master/images/12-managerAddNewProduct.png)
+![13](https://github.com/jbpkp07/Bamazon/blob/master/images/13-managerAddNewProduct.png)
+![14](https://github.com/jbpkp07/Bamazon/blob/master/images/14-managerAddNewProduct.png)
+![15](https://github.com/jbpkp07/Bamazon/blob/master/images/15-managerAddNewProduct.png)
+![16](https://github.com/jbpkp07/Bamazon/blob/master/images/16-managerAddNewProduct.png)
+![17](https://github.com/jbpkp07/Bamazon/blob/master/images/17-managerAddNewProduct.png)
+![18](https://github.com/jbpkp07/Bamazon/blob/master/images/18-managerAddNewProduct.png)
+
+#### Supervisor Portal:
+
+![19](https://github.com/jbpkp07/Bamazon/blob/master/images/19-supervisorPortal.png)
+
+#### Supervisor Add New Department:
+
+![20](https://github.com/jbpkp07/Bamazon/blob/master/images/20-supervisorAddNewDepartment.png)
+![21](https://github.com/jbpkp07/Bamazon/blob/master/images/21-supervisorAddNewDepartment.png)
+![22](https://github.com/jbpkp07/Bamazon/blob/master/images/22-supervisorAddNewDepartment.png)
+
+#### Supervisor View Product Sales By Department:
+
+![23](https://github.com/jbpkp07/Bamazon/blob/master/images/23-supervisorViewSalesByDepartment.png)
 
